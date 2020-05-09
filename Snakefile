@@ -76,11 +76,7 @@ rule adapterremoval:
     params:
         minquality = config['ar-minquality'],
         minlength = config['ar-minlength'],
-        minadapteroverlap = config['ar-minadapteroverlap'],
-        mm = config['ar-mm'],
         optional = config['ar-optional'],
-        collapsed = "results/{sample}/adapterremoval/{sample}_collapsed.fastq",
-        collapsed_truncated = "results/{sample}/adapterremoval/{sample}_collapsed_truncated.fastq",
     output:
         forward = "results/{sample}/adapterremoval/{sample}_1.fastq",
         reverse = "results/{sample}/adapterremoval/{sample}_2.fastq",
@@ -104,14 +100,10 @@ rule adapterremoval:
 --output1 {output.forward} \
 --output2 {output.reverse} \
 --singleton {output.singleton} \
---outputcollapsed {params.collapsed} \
---outputcollapsedtruncated {params.collapsed_truncated} \
 --discarded {output.discarded} \
 {params.optional} \
 --minquality {params.minquality} \
 --minlength {params.minlength} \
---minadapteroverlap {params.minadapteroverlap} \
---mm {params.mm} \
 > {log.stdout} \
 2> {log.stderr}
         """

@@ -10,6 +10,4 @@ samples:
 # Adapter Removal parameters
 ar-minquality: 20
 ar-minlength: 31
-ar-minadapteroverlap: 11
-ar-mm: 3
-ar-optional: '--trimns --trimqualities --collapse'
+ar-optional: '--trimns --trimqualities'
