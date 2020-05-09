@@ -3,6 +3,6 @@ workdir: '/home/fabio/Desktop/assembly-hiseq/'
 threads: 12
 
 samples:
-    'NG-19302_B208_lib327116_6377':
+    'NG-19302_B208_lib327116_6377_1':
         forward: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_1.fastq.gz'
         reverse: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_2.fastq.gz'

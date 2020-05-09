@@ -2,7 +2,8 @@ workdir: config["workdir"]
 
 rule all:
     input:
-        fastqc = ["results/" + sample + "/fastqc/*.html" for sample in config["samples"]]
+        forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
+        reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]]
 
 rule fastqc:
     input:
@@ -11,7 +12,8 @@ rule fastqc:
     params:
         output = "results/{sample}/fastqc"
     output:
-        "results/{sample}/fastqc/*.html"
+        forward = "results/{sample}/fastqc/{sample}_1_fastqc.html",
+        reverse = "results/{sample}/fastqc/{sample}_2_fastqc.html"
     conda:
         "envs/fastqc.yaml"
     benchmark:
