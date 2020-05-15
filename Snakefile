@@ -5,7 +5,7 @@ rule all:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
         fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
         edena = ["results/" + sample + "/edena/" + sample + "_contigs.fasta" for sample in config["samples"]],
-        arforward = ["results/" + sample + "/adapterremoval/" + sample + "_1.fastq" for sample in config["samples"]]
+        kmerstream = ["results/" + sample + "/kmerstream/ar-" + sample + ".tsv" for sample in config["samples"]]
 
 # TODO: remember to remove files extracted at the end of the pipeline
 
@@ -118,4 +118,53 @@ rule adapterremoval:
 --settings {output.settings} \
 > {log.stdout} \
 2> {log.stderr}
+        """
+
+rule kmerstream:
+    input:
+        forward = "results/{sample}/adapterremoval/{sample}_1.fastq",
+        reverse = "results/{sample}/adapterremoval/{sample}_2.fastq",
+        singleton = "results/{sample}/adapterremoval/{sample}_singleton.fastq"
+    params:
+        collapsed = "results/{sample}/adapterremoval/{sample}_collapsed.fastq",
+        collapsed_truncated = "results/{sample}/adapterremoval/{sample}_collapsed_truncated.fastq"
+    output:
+        "results/{sample}/kmerstream/ar-{sample}.tsv"
+    log:
+        stdout = "results/{sample}/kmerstream/log-stdout.txt",
+        stderr = "results/{sample}/kmerstream/log-stderr.txt"
+    conda:
+        "envs/kmerstream.yaml"
+    benchmark:
+        "results/{sample}/kmerstream/benchmark.txt"
+    threads:
+        config["threads"]
+    shell:
+        """
+if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
+KmerStream \
+--kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,\
+51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,\
+101,103,105,107,109,111,113,115,117,119,121,123,125,127 \
+--output={output} \
+--threads={threads} \
+--tsv \
+{input.forward} \
+{input.reverse} \
+{input.singleton} \
+{params.collapsed} \
+{params.collapsed_truncated}
+fi
+if [ ! -f {params.collapsed} ]; then
+KmerStream \
+--kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,\
+51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,\
+101,103,105,107,109,111,113,115,117,119,121,123,125,127 \
+--output={output} \
+--threads={threads} \
+--tsv \
+{input.forward} \
+{input.reverse} \
+{input.singleton}
+fi
         """
