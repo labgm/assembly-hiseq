@@ -1,0 +1,8 @@
+channels:
+ - conda-forge
+ - anaconda
+ - bioconda
+dependencies:
+ - bzip2
+ - unzip
+ - p7zip

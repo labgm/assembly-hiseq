@@ -7,7 +7,7 @@ rule all:
         edena = ["results/" + sample + "/edena/" + sample + "_contigs.fasta" for sample in config["samples"]],
         arforward = ["results/" + sample + "/adapterremoval/" + sample + "_1.fastq" for sample in config["samples"]]
 
-# TODO: remember to remove files extracted by zcat at the end of the pipeline
+# TODO: remember to remove files extracted at the end of the pipeline
 
 rule fastqc:
     input:
@@ -30,25 +30,27 @@ rule fastqc:
     shell:
         "fastqc --threads {threads} --outdir {params.outdir} {input.forward} {input.reverse} > {log.stdout} 2> {log.stderr}"
 
-rule zcat:
+rule extract:
     input:
         forward = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["forward"]),
         reverse = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["reverse"])
     output:
-        forward = "results/{sample}/zcat/{sample}_1.fastq",
-        reverse = "results/{sample}/zcat/{sample}_2.fastq"
+        forward = "results/{sample}/extract-file/{sample}_1.fastq",
+        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
+    conda:
+        "envs/extract-file.yaml"
     benchmark:
-        "results/{sample}/zcat/benchmark.txt"
+        "results/{sample}/extract-file/benchmark.txt"
     shell:
         """
-        zcat {input.forward} > {output.forward}
-        zcat {input.reverse} > {output.reverse}
+        ./scripts/extract-file.sh {input.forward} {output.forward}
+        ./scripts/extract-file.sh {input.reverse} {output.reverse}
         """
 
 rule edena:
     input:
-        forward = "results/{sample}/zcat/{sample}_1.fastq",
-        reverse = "results/{sample}/zcat/{sample}_2.fastq"
+        forward = "results/{sample}/extract-file/{sample}_1.fastq",
+        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
     params:
         prefix = "results/{sample}/edena/{sample}"
     output:
@@ -71,17 +73,22 @@ rule edena:
 
 rule adapterremoval:
     input:
-        forward = "results/{sample}/zcat/{sample}_1.fastq",
-        reverse = "results/{sample}/zcat/{sample}_2.fastq"
+        forward = "results/{sample}/extract-file/{sample}_1.fastq",
+        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
     params:
         minquality = config['ar-minquality'],
         minlength = config['ar-minlength'],
         optional = config['ar-optional'],
+        mm = config['ar-mm'],
+        minalignmentlength = config['ar-minalignmentlength'],
+        collapsed = "results/{sample}/adapterremoval/{sample}_collapsed.fastq",
+        collapsed_truncated = "results/{sample}/adapterremoval/{sample}_collapsed_truncated.fastq"
     output:
         forward = "results/{sample}/adapterremoval/{sample}_1.fastq",
         reverse = "results/{sample}/adapterremoval/{sample}_2.fastq",
         singleton = "results/{sample}/adapterremoval/{sample}_singleton.fastq",
-        discarded = "results/{sample}/adapterremoval/{sample}_discarded.fastq"
+        discarded = "results/{sample}/adapterremoval/{sample}_discarded.fastq",
+        settings = "results/{sample}/adapterremoval/{sample}_settings"
     log:
         stdout = "results/{sample}/adapterremoval/log-stdout.txt",
         stderr = "results/{sample}/adapterremoval/log-stderr.txt"
@@ -100,10 +107,15 @@ rule adapterremoval:
 --output1 {output.forward} \
 --output2 {output.reverse} \
 --singleton {output.singleton} \
+--outputcollapsed {params.collapsed} \
+--outputcollapsedtruncated {params.collapsed_truncated} \
 --discarded {output.discarded} \
 {params.optional} \
 --minquality {params.minquality} \
 --minlength {params.minlength} \
+--minalignmentlength {params.minalignmentlength} \
+--mm {params.mm} \
+--settings {output.settings} \
 > {log.stdout} \
 2> {log.stderr}
         """

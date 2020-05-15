@@ -10,4 +10,6 @@ samples:
 # Adapter Removal parameters
 ar-minquality: 20
 ar-minlength: 31
-ar-optional: '--trimns --trimqualities'
+ar-mm: 3
+ar-minalignmentlength: 11
+ar-optional: '--trimns --trimqualities --collapse'
