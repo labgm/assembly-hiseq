@@ -225,6 +225,8 @@ rule unicycler:
         "results/{sample}/unicycler/benchmark.txt"
     threads:
         config["threads"]
+    resources:
+        mem_mb = config["mem_mb"]
     shell:
         """
         unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
