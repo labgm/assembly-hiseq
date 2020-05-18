@@ -180,7 +180,7 @@ rule spades:
     threads:
         config["threads"]
     resources:
-        mem_mb = config["mem_mb"]
+        mem_gb = int(round(config["mem_mb"] / 1024))
     shell:
         """
 kmers=$(tail -n +2 {input.kmerstream} \
