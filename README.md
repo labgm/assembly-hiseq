@@ -9,7 +9,7 @@ The only requirement to run this pipeline is conda. Please, install conda on you
 With conda installed, we can create a new environment with snakemake installed running the following command:
 
 ```
-conda create -c conda-forge -c bioconda -n assembly-hiseq snakemake
+conda create -c conda-forge -c bioconda -n assembly-hiseq snakemake -y
 ```
 
 ## Running
@@ -27,4 +27,7 @@ If Snakemake cannot activate conda environments, you can just copy the activate 
 
 ```
 cp /home/fabio/anaconda3/bin/activate /home/fabio/anaconda3/envs/assembly-hiseq/bin/activate
+```
+```
+conda install -c bioconda cd-hit -y
 ```
