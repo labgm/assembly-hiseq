@@ -5,7 +5,8 @@ rule all:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
         fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
         edena = ["results/" + sample + "/edena/" + sample + "_contigs.fasta" for sample in config["samples"]],
-        spades = ["results/" + sample + "/spades/scaffolds.fasta" for sample in config["samples"]]
+        spades = ["results/" + sample + "/spades/scaffolds.fasta" for sample in config["samples"]],
+        unicycler = ["results/" + sample + "/unicycler/assembly.fasta" for sample in config["samples"]]
 
 # TODO: remember to remove files extracted at the end of the pipeline
 
@@ -141,7 +142,10 @@ rule kmerstream:
         config["threads"]
     shell:
         """
+params=()
 if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
+    params+=({params.collapsed} {params.collapsed_truncated})
+fi
 KmerStream \
 --kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,\
 51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,\
@@ -151,22 +155,7 @@ KmerStream \
 --tsv \
 {input.forward} \
 {input.reverse} \
-{input.singleton} \
-{params.collapsed} \
-{params.collapsed_truncated}
-fi
-if [ ! -f {params.collapsed} ]; then
-KmerStream \
---kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,\
-51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,\
-101,103,105,107,109,111,113,115,117,119,121,123,125,127 \
---output={output} \
---threads={threads} \
---tsv \
-{input.forward} \
-{input.reverse} \
-{input.singleton}
-fi
+{input.singleton} "${{params[@]}}"
         """
 
 rule spades:
@@ -200,29 +189,40 @@ kmers=$(tail -n +2 {input.kmerstream} \
 | rev \
 | cut -c 2- \
 | rev)
+params=()
 if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
+    params+=(--merged {params.collapsed} --merged {params.collapsed_truncated})
+fi
 spades.py \
 -1 {input.forward} \
 -2 {input.reverse} \
---s1 {input.singleton} \
---s1 {params.collapsed} \
---s1 {params.collapsed_truncated} \
+-s {input.singleton} "${{params[@]}}" \
 --threads {threads} \
 -k $kmers \
 -o {params.prefix} \
 > {log.stdout} \
 2> {log.stderr}
-fi
-if [ ! -f {params.collapsed} ]; then
-spades.py \
--1 {input.forward} \
--2 {input.reverse} \
---s1 {input.singleton} \
---threads {threads} \
--k $kmers \
--o {params.prefix} \
-> {log.stdout} \
-2> {log.stderr}
-fi
 rm -rf {params.prefix}/corrected
+        """
+
+rule unicycler:
+    input:
+        forward = "results/{sample}/extract-file/{sample}_1.fastq",
+        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
+    params:
+        prefix = "results/{sample}/unicycler"
+    output:
+        "results/{sample}/unicycler/assembly.fasta"
+    log:
+        stdout = "results/{sample}/unicycler/log-stdout.txt",
+        stderr = "results/{sample}/unicycler/log-stderr.txt"
+    conda:
+        "envs/unicycler.yaml"
+    benchmark:
+        "results/{sample}/unicycler/benchmark.txt"
+    threads:
+        config["threads"]
+    shell:
+        """
+        unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
         """
