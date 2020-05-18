@@ -241,7 +241,8 @@ rule cdhit:
         version = config['ch-version'],
         identity = config['ch-identity'],
         program = config['ch-program'],
-        circle = config['ch-circle']
+        circle = config['ch-circle'],
+        concat = "results/{sample}/cdhit/concat.fasta"
     output:
         "results/{sample}/cdhit/contigs.fasta"
     log:
@@ -255,6 +256,6 @@ rule cdhit:
         mem_mb = config["mem_mb"]
     run:
         if params.version == 'est':
-            shell("""cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta;cd-hit-est -i results/{sample}/cdhit/concat.fasta -o {output} -T {threads} -mask N -c {params.identity} -M {resources.mem_mb}""")
+            shell("""cat {input.edena} {input.spades} {input.unicycler} > {params.concat};cd-hit-est -i {params.concat} -o {output} -T {threads} -mask N -c {params.identity} -M {resources.mem_mb}""")
         else:
-            shell("""cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta;psi-cd-hit.pl -i results/{sample}/cdhit/concat.fasta -o {output} -c {params.identity} -prog {params.program} -circle {params.circle}""")
+            shell("""cat {input.edena} {input.spades} {input.unicycler} > {params.concat};psi-cd-hit.pl -i {params.concat} -o {output} -c {params.identity} -prog {params.program} -circle {params.circle}""")
