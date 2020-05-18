@@ -4,9 +4,7 @@ rule all:
     input:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
         fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
-        edena = ["results/" + sample + "/edena/" + sample + "_contigs.fasta" for sample in config["samples"]],
-        spades = ["results/" + sample + "/spades/scaffolds.fasta" for sample in config["samples"]],
-        unicycler = ["results/" + sample + "/unicycler/assembly.fasta" for sample in config["samples"]]
+        cdhit = ["results/" + sample + "/cdhit/contigs.fasta" for sample in config["samples"]]
 
 # TODO: remember to remove files extracted at the end of the pipeline
 
@@ -243,7 +241,7 @@ rule cdhit:
         program = config['ch-program']
         circle = config['ch-circle']
     output:
-        "results/{sample}/cdhit/assembly.fasta"
+        "results/{sample}/cdhit/contigs.fasta"
     log:
         stdout = "results/{sample}/cdhit/log-stdout.txt",
         stderr = "results/{sample}/cdhit/log-stderr.txt"
