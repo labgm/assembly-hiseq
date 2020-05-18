@@ -237,8 +237,8 @@ rule cdhit:
         unicycler = "results/{sample}/unicycler/assembly.fasta"
     params:
         version = config['ch-version'],
-        identity = config['ch-identity']
-        program = config['ch-program']
+        identity = config['ch-identity'],
+        program = config['ch-program'],
         circle = config['ch-circle']
     output:
         "results/{sample}/cdhit/contigs.fasta"
