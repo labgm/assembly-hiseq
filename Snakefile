@@ -255,14 +255,6 @@ rule cdhit:
         config["mem_mb"]
     run:
         if params.version == 'est':
-            shell:
-                """
-                cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta
-                cd-hit-est -i results/{sample}/cdhit/concat.fasta -o {output} -T {threads} -mask N -c {params.identity} -M {resources.mem_mb}
-                """
+            shell("""cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta;cd-hit-est -i results/{sample}/cdhit/concat.fasta -o {output} -T {threads} -mask N -c {params.identity} -M {resources.mem_mb}""")
         else:
-            shell:
-                """
-                cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta
-                psi-cd-hit.pl -i results/{sample}/cdhit/concat.fasta -o {output} -c {params.identity} -prog {params.program} -circle {params.circle}
-                """
+            shell("""cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta;psi-cd-hit.pl -i results/{sample}/cdhit/concat.fasta -o {output} -c {params.identity} -prog {params.program} -circle {params.circle}""")
