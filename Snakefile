@@ -196,7 +196,7 @@ if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
     params+=(--merged {params.collapsed} --merged {params.collapsed_truncated})
 fi
 spades.py \
---memory {resources.mem_mb} \
+--memory {resources.mem_gb} \
 -1 {input.forward} \
 -2 {input.reverse} \
 -s {input.singleton} "${{params[@]}}" \
