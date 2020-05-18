@@ -245,8 +245,6 @@ rule cdhit:
     log:
         stdout = "results/{sample}/cdhit/log-stdout.txt",
         stderr = "results/{sample}/cdhit/log-stderr.txt"
-    conda:
-        "envs/cdhit.yaml"
     benchmark:
         "results/{sample}/cdhit/benchmark.txt"
     threads:
