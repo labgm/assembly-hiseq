@@ -28,6 +28,3 @@ If Snakemake cannot activate conda environments, you can just copy the activate 
 ```
 cp /home/fabio/anaconda3/bin/activate /home/fabio/anaconda3/envs/assembly-hiseq/bin/activate
 ```
-```
-conda install -c bioconda cd-hit -y
-```
