@@ -1,6 +1,7 @@
 workdir: '/home/fabio/Desktop/assembly-hiseq/'
 
 threads: 12
+mem_mb: 256000
 
 samples:
     'NG-19302_B208_lib327116_6377_1':
@@ -13,3 +14,12 @@ ar-minlength: 31
 ar-mm: 3
 ar-minalignmentlength: 11
 ar-optional: '--trimns --trimqualities --collapse'
+
+# CD-HIT parameters
+# ch-version can be 'est' or 'psi'
+# ch-program can be blastp, blastn, megablast or psiblast
+# ch-circle can be 1 or 0
+ch-version: 'est'
+ch-identity: 0.98
+ch-program: 'blastn'
+ch-circle: 1

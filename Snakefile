@@ -65,6 +65,8 @@ rule edena:
         "results/{sample}/edena/benchmark.txt"
     threads:
         config["threads"]
+    resources:
+        config["mem_mb"]
     shell:
         """
         edena -nThreads {threads} -paired {input.forward} {input.reverse} -prefix {params.prefix} > {log.stdout} 2> {log.stderr}
@@ -179,6 +181,8 @@ rule spades:
         "results/{sample}/spades/benchmark.txt"
     threads:
         config["threads"]
+    resources:
+        config["mem_mb"]
     shell:
         """
 kmers=$(tail -n +2 {input.kmerstream} \
@@ -194,6 +198,7 @@ if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
     params+=(--merged {params.collapsed} --merged {params.collapsed_truncated})
 fi
 spades.py \
+--memory {resources.mem_mb} \
 -1 {input.forward} \
 -2 {input.reverse} \
 -s {input.singleton} "${{params[@]}}" \
@@ -226,3 +231,40 @@ rule unicycler:
         """
         unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
         """
+
+rule cdhit:
+    input:
+        edena = "results/{sample}/edena/{sample}_contigs.fasta",
+        spades = "results/{sample}/spades/scaffolds.fasta",
+        unicycler = "results/{sample}/unicycler/assembly.fasta"
+    params:
+        version = config['ch-version'],
+        identity = config['ch-identity']
+        program = config['ch-program']
+        circle = config['ch-circle']
+    output:
+        "results/{sample}/cdhit/assembly.fasta"
+    log:
+        stdout = "results/{sample}/cdhit/log-stdout.txt",
+        stderr = "results/{sample}/cdhit/log-stderr.txt"
+    conda:
+        "envs/cdhit.yaml"
+    benchmark:
+        "results/{sample}/cdhit/benchmark.txt"
+    threads:
+        config["threads"]
+    resources:
+        config["mem_mb"]
+    run:
+        if params.version == 'est':
+            shell:
+                """
+                cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta
+                cd-hit-est -i results/{sample}/cdhit/concat.fasta -o {output} -T {threads} -mask N -c {params.identity} -M {resources.mem_mb}
+                """
+        else:
+            shell:
+                """
+                cat {input.edena} {input.spades} {input.unicycler} > results/{sample}/cdhit/concat.fasta
+                psi-cd-hit.pl -i results/{sample}/cdhit/concat.fasta -o {output} -c {params.identity} -prog {params.program} -circle {params.circle}
+                """
