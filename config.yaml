@@ -9,15 +9,22 @@ samples:
         reverse: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_2.fastq.gz'
 
 # Adapter Removal parameters
-ar-minquality: 20
-ar-minlength: 31
-ar-mm: 3
-ar-minalignmentlength: 11
-ar-optional: '--trimns --trimqualities --collapse'
+adapterremoval:
+    minquality: 20
+    minlength: 31
+    mm: 3
+    minalignmentlength: 11
+    optional: '--trimns --trimqualities --collapse'
 
 # CD-HIT parameters
 # ch-program can be blastp, blastn, megablast or psiblast
 # ch-circle can be 1 or 0
-ch-identity: 0.98
-ch-program: 'blastn'
-ch-circle: 1
+cdhit:
+    identity: 0.98
+    program: 'blastn'
+    circle: 1
+
+# QUAST parameters
+quast:
+    reference: 'empty'
+    genes: 'empty'

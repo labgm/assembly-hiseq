@@ -4,7 +4,7 @@ rule all:
     input:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
         fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
-        cdhit = ["results/" + sample + "/cdhit/contigs.fasta" for sample in config["samples"]]
+        quast = ["results/" + sample + "/quast/report.tsv" for sample in config["samples"]]
 
 # TODO: remember to remove files extracted at the end of the pipeline
 
@@ -77,11 +77,11 @@ rule adapterremoval:
         forward = "results/{sample}/extract-file/{sample}_1.fastq",
         reverse = "results/{sample}/extract-file/{sample}_2.fastq"
     params:
-        minquality = config['ar-minquality'],
-        minlength = config['ar-minlength'],
-        optional = config['ar-optional'],
-        mm = config['ar-mm'],
-        minalignmentlength = config['ar-minalignmentlength'],
+        minquality = config['adapterremoval']['minquality'],
+        minlength = config['adapterremoval']['minlength'],
+        optional = config['adapterremoval']['optional'],
+        mm = config['adapterremoval']['mm'],
+        minalignmentlength = config['adapterremoval']['minalignmentlength'],
         collapsed = "results/{sample}/adapterremoval/{sample}_collapsed.fastq",
         collapsed_truncated = "results/{sample}/adapterremoval/{sample}_collapsed_truncated.fastq"
     output:
@@ -234,28 +234,25 @@ rule unicycler:
 
 rule install_cdhit:
     output:
-        "bin/cdhit/psi-cd-hit/psi-cd-hit.pl"
+        "results/bin/cdhit/psi-cd-hit/psi-cd-hit.pl"
     conda:
         "envs/cdhit.yaml"
-    log:
-        stdout = "bin/cdhit/log-stdout.txt",
-        stderr = "bin/cdhit/log-stderr.txt"
     shell:
         """
-        rm -rf bin/cdhit
-        git clone https://github.com/weizhongli/cdhit.git bin/cdhit > /dev/null 2> /dev/null
+        rm -rf results/bin/cdhit
+        git clone https://github.com/weizhongli/cdhit.git results/bin/cdhit > /dev/null 2> /dev/null
         """
 
 rule cdhit:
     input:
-        cdhit = "bin/cdhit/psi-cd-hit/psi-cd-hit.pl",
+        cdhit = "results/bin/cdhit/psi-cd-hit/psi-cd-hit.pl",
         edena = "results/{sample}/edena/{sample}_contigs.fasta",
         spades = "results/{sample}/spades/scaffolds.fasta",
         unicycler = "results/{sample}/unicycler/assembly.fasta"
     params:
-        identity = config['ch-identity'],
-        program = config['ch-program'],
-        circle = config['ch-circle'],
+        identity = config['cdhit']['identity'],
+        program = config['cdhit']['program'],
+        circle = config['cdhit']['circle'],
         concat = "results/{sample}/cdhit/concat.fasta"
     output:
         "results/{sample}/cdhit/contigs.fasta"
@@ -274,4 +271,39 @@ rule cdhit:
         """
         cat {input.edena} {input.spades} {input.unicycler} > {params.concat}
         {input.cdhit} -i {params.concat} -o {output} -c {params.identity} -prog {params.program} -circle {params.circle} > {log.stdout} 2> {log.stderr}
+        """
+
+rule quast:
+    input:
+        edena = "results/{sample}/edena/{sample}_contigs.fasta",
+        spades = "results/{sample}/spades/scaffolds.fasta",
+        unicycler = "results/{sample}/unicycler/assembly.fasta",
+        cdhit = "results/{sample}/cdhit/contigs.fasta",
+    params:
+        prefix = "results/{sample}/quast",
+        reference = config['quast']['reference'],
+        genes = config['quast']['genes']
+    output:
+        "results/{sample}/quast/report.tsv"
+    log:
+        stdout = "results/{sample}/quast/log-stdout.txt",
+        stderr = "results/{sample}/quast/log-stderr.txt"
+    conda:
+        "envs/quast.yaml"
+    benchmark:
+        "results/{sample}/quast/benchmark.txt"
+    threads:
+        config["threads"]
+    resources:
+        mem_mb = config["mem_mb"]
+    shell:
+        """
+        params=()
+        if [ -f {params.reference} ]; then
+            params+=(-r {params.reference})
+        fi
+        if [ -f {params.genes} ]; then
+            params+=(-g {params.genes})
+        fi
+        quast.py "${{params[@]}}" -L -t {threads} -o {params.prefix} {input.edena} {input.spades} {input.unicycler} {input.cdhit} > {log.stdout} 2> {log.stderr}
         """
