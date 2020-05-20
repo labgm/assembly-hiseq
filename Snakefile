@@ -232,13 +232,27 @@ rule unicycler:
         unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
         """
 
+rule install_cdhit:
+    output:
+        "bin/cdhit/psi-cd-hit/psi-cd-hit.pl"
+    conda:
+        "envs/cdhit.yaml"
+    log:
+        stdout = "bin/cdhit/log-stdout.txt",
+        stderr = "bin/cdhit/log-stderr.txt"
+    shell:
+        """
+        rm -rf bin/cdhit
+        git clone https://github.com/weizhongli/cdhit.git bin/cdhit > /dev/null 2> /dev/null
+        """
+
 rule cdhit:
     input:
+        cdhit = "bin/cdhit/psi-cd-hit/psi-cd-hit.pl",
         edena = "results/{sample}/edena/{sample}_contigs.fasta",
         spades = "results/{sample}/spades/scaffolds.fasta",
         unicycler = "results/{sample}/unicycler/assembly.fasta"
     params:
-        version = config['ch-version'],
         identity = config['ch-identity'],
         program = config['ch-program'],
         circle = config['ch-circle'],
@@ -254,8 +268,10 @@ rule cdhit:
         config["threads"]
     resources:
         mem_mb = config["mem_mb"]
-    run:
-        if params.version == 'est':
-            shell("""cat {input.edena} {input.spades} {input.unicycler} > {params.concat};cd-hit-est -i {params.concat} -o {output} -T {threads} -mask N -c {params.identity} -M {resources.mem_mb}""")
-        else:
-            shell("""cat {input.edena} {input.spades} {input.unicycler} > {params.concat};psi-cd-hit.pl -i {params.concat} -o {output} -c {params.identity} -prog {params.program} -circle {params.circle}""")
+    conda:
+        "envs/cdhit.yaml"
+    shell:
+        """
+        cat {input.edena} {input.spades} {input.unicycler} > {params.concat}
+        {input.cdhit} -i {params.concat} -o {output} -c {params.identity} -prog {params.program} -circle {params.circle} > {log.stdout} 2> {log.stderr}
+        """
