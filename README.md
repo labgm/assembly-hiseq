@@ -6,7 +6,7 @@ A snakemake pipeline to assemble sequencing data produced by Illumina HiSeq
 
 The only requirement to run this pipeline is conda. Please, install conda on your machine beforehand ([https://www.anaconda.com/products/individual](https://www.anaconda.com/products/individual)).
 
-With conda installed, we can create a new environment with snakemake installed running the following command:
+With conda installed, we can create a new environment with snakemake by running the following command:
 
 ```
 conda create -c conda-forge -c bioconda -n assembly-hiseq snakemake -y
