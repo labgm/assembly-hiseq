@@ -25,7 +25,7 @@ rule fastqc:
     benchmark:
         "results/{sample}/fastqc/benchmark.txt"
     threads:
-        config["threads"]
+        6
     shell:
         "fastqc --threads {threads} --outdir {params.outdir} {input.forward} {input.reverse} > {log.stdout} 2> {log.stderr}"
 
@@ -38,6 +38,8 @@ rule extract:
         reverse = "results/{sample}/extract-file/{sample}_2.fastq"
     conda:
         "envs/extract-file.yaml"
+    threads:
+        1
     benchmark:
         "results/{sample}/extract-file/benchmark.txt"
     shell:
@@ -62,7 +64,7 @@ rule edena:
     benchmark:
         "results/{sample}/edena/benchmark.txt"
     threads:
-        config["threads"]
+        12
     resources:
         mem_mb = config["mem_mb"]
     shell:
@@ -98,7 +100,7 @@ rule adapterremoval:
     benchmark:
         "results/{sample}/adapterremoval/benchmark.txt"
     threads:
-        config["threads"]
+        6
     shell:
         """
         AdapterRemoval \
@@ -139,7 +141,7 @@ rule kmerstream:
     benchmark:
         "results/{sample}/kmerstream/benchmark.txt"
     threads:
-        config["threads"]
+        6
     shell:
         """
 params=()
@@ -178,7 +180,7 @@ rule spades:
     benchmark:
         "results/{sample}/spades/benchmark.txt"
     threads:
-        config["threads"]
+        12
     resources:
         mem_gb = int(round(config["mem_mb"] / 1024))
     shell:
@@ -224,7 +226,7 @@ rule unicycler:
     benchmark:
         "results/{sample}/unicycler/benchmark.txt"
     threads:
-        config["threads"]
+        12
     resources:
         mem_mb = config["mem_mb"]
     shell:
@@ -237,6 +239,8 @@ rule install_cdhit:
         "results/bin/cdhit/psi-cd-hit/psi-cd-hit.pl"
     conda:
         "envs/cdhit.yaml"
+    threads:
+        1
     shell:
         """
         rm -rf results/bin/cdhit
@@ -262,7 +266,7 @@ rule cdhit:
     benchmark:
         "results/{sample}/cdhit/benchmark.txt"
     threads:
-        config["threads"]
+        1
     resources:
         mem_mb = config["mem_mb"]
     conda:
@@ -293,7 +297,7 @@ rule quast:
     benchmark:
         "results/{sample}/quast/benchmark.txt"
     threads:
-        config["threads"]
+        6
     resources:
         mem_mb = config["mem_mb"]
     shell:
