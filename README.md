@@ -34,6 +34,8 @@ conda activate assembly-hiseq
 snakemake -s Snakefile --configfile config.yaml --use-conda -kpr --cores 12
 ```
 
+The assemblies of each sample will be saved in the results folder.
+
 ## Troubleshooting
 
 If Snakemake cannot activate conda environments, you can just copy the activate binary from your conda main folder to the environment you created to use this pipeline. For example:
