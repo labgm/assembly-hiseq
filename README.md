@@ -34,7 +34,7 @@ conda activate assembly-hiseq
 snakemake -s Snakefile --configfile config.yaml --use-conda -kpr --cores 12
 ```
 
-The assemblies of each sample will be saved in the results folder.
+The assemblies for each sample will be saved in the results folder.
 
 ## Troubleshooting
 
