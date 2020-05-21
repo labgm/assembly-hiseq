@@ -6,7 +6,7 @@ rule all:
     input:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
         fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
-        quast = ["results/" + sample + "/quast/report.tsv" for sample in config["samples"]]
+        prokka = ["results/" + sample + "/prokka/" + sample + ".gbk" for sample in config["samples"]]
 
 # TODO: remember to remove files extracted at the end of the pipeline
 
@@ -194,6 +194,8 @@ rule unicycler:
         unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
         """
 
+# Cloning the cdhit repository because psi-cd-hit.pl is not available in bioconda
+
 rule install_cdhit:
     output:
         "results/bin/cdhit/psi-cd-hit/psi-cd-hit.pl"
@@ -270,4 +272,46 @@ rule quast:
             params+=(-g {params.genes})
         fi
         quast.py "${{params[@]}}" -L -t {threads} -o {params.prefix} {input.edena} {input.spades} {input.unicycler} {input.cdhit} > {log.stdout} 2> {log.stderr}
+        """
+
+# Cloning the prokka repository because tbl2asn in bioconda is old and throws errors
+
+rule install_prokka:
+    output:
+        "results/bin/prokka/binaries/linux/tbl2asn"
+    conda:
+        "envs/prokka.yaml"
+    threads:
+        1
+    shell:
+        """
+        rm -rf results/bin/prokka
+        git clone https://github.com/tseemann/prokka.git results/bin/prokka > /dev/null 2> /dev/null
+        """
+
+rule prokka:
+    input:
+        cdhit = "results/{sample}/cdhit/contigs.fasta",
+        prokka = "results/bin/prokka/binaries/linux/tbl2asn"
+    params:
+        outdir = "results/{sample}/prokka",
+        prefix = "{sample}",
+        prokka = "results/bin/prokka/binaries/linux"
+    output:
+        "results/{sample}/prokka/{sample}.gbk"
+    log:
+        stdout = "results/{sample}/prokka/log-stdout.txt",
+        stderr = "results/{sample}/prokka/log-stderr.txt"
+    conda:
+        "envs/prokka.yaml"
+    benchmark:
+        "results/{sample}/prokka/benchmark.txt"
+    threads:
+        6
+    resources:
+        mem_mb = config["mem_mb"]
+    shell:
+        """
+        export PATH={params.prokka}:$PATH
+        prokka --force --cpus {threads} --outdir {params.outdir} --prefix {params.prefix} {input} --centre X --compliant > {log.stdout} 2> {log.stderr}
         """
