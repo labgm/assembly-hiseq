@@ -105,24 +105,7 @@ rule adapterremoval:
         6
     shell:
         """
-        AdapterRemoval \
---file1 {input.forward} \
---file2 {input.reverse} \
---threads {threads} \
---output1 {output.forward} \
---output2 {output.reverse} \
---singleton {output.singleton} \
---outputcollapsed {params.collapsed} \
---outputcollapsedtruncated {params.collapsed_truncated} \
---discarded {output.discarded} \
-{params.optional} \
---minquality {params.minquality} \
---minlength {params.minlength} \
---minalignmentlength {params.minalignmentlength} \
---mm {params.mm} \
---settings {output.settings} \
-> {log.stdout} \
-2> {log.stderr}
+        AdapterRemoval --file1 {input.forward} --file2 {input.reverse} --threads {threads} --output1 {output.forward} --output2 {output.reverse} --singleton {output.singleton} --outputcollapsed {params.collapsed} --outputcollapsedtruncated {params.collapsed_truncated} --discarded {output.discarded} {params.optional} --minquality {params.minquality} --minlength {params.minlength} --minalignmentlength {params.minalignmentlength} --mm {params.mm} --settings {output.settings} > {log.stdout} 2> {log.stderr}
         """
 
 rule kmerstream:
@@ -146,20 +129,11 @@ rule kmerstream:
         6
     shell:
         """
-params=()
-if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
-    params+=({params.collapsed} {params.collapsed_truncated})
-fi
-KmerStream \
---kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,\
-51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,\
-101,103,105,107,109,111,113,115,117,119,121,123,125,127 \
---output={output} \
---threads={threads} \
---tsv \
-{input.forward} \
-{input.reverse} \
-{input.singleton} "${{params[@]}}"
+        params=()
+        if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
+            params+=({params.collapsed} {params.collapsed_truncated})
+        fi
+        KmerStream --kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127 --output={output} --threads={threads} --tsv {input.forward} {input.reverse} {input.singleton} "${{params[@]}}"
         """
 
 rule spades:
@@ -187,29 +161,13 @@ rule spades:
         mem_gb = int(round(config["mem_mb"] / 1024))
     shell:
         """
-kmers=$(tail -n +2 {input.kmerstream} \
-| sort -g -r -k3 \
-| cut -f2 \
-| head -n 5 \
-| tr '\\n' ',' \
-| rev \
-| cut -c 2- \
-| rev)
-params=()
-if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
-    params+=(--merged {params.collapsed} --merged {params.collapsed_truncated})
-fi
-spades.py \
---memory {resources.mem_gb} \
--1 {input.forward} \
--2 {input.reverse} \
--s {input.singleton} "${{params[@]}}" \
---threads {threads} \
--k $kmers \
--o {params.prefix} \
-> {log.stdout} \
-2> {log.stderr}
-rm -rf {params.prefix}/corrected
+        kmers=$(tail -n +2 {input.kmerstream} | sort -g -r -k3 | cut -f2 | head -n 5 | tr '\\n' ',' | rev | cut -c 2- | rev)
+        params=()
+        if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
+            params+=(--merged {params.collapsed} --merged {params.collapsed_truncated})
+        fi
+        spades.py --memory {resources.mem_gb} -1 {input.forward} -2 {input.reverse} -s {input.singleton} "${{params[@]}}" --threads {threads} -k $kmers -o {params.prefix} > {log.stdout} 2> {log.stderr}
+        rm -rf {params.prefix}/corrected
         """
 
 rule unicycler:
