@@ -36,7 +36,7 @@ snakemake -s Snakefile --configfile config.yaml --use-conda --cores 12
 
 The -s parameter is used to select the script containing the workflow rules. Similarly, the --configfile parameter is used to select the config file with parameters and samples to be processed, while the --use-conda is necessary to indicate that conda will be used to manage the software dependencies of the pipeline. Finally, the --cores parameters is used to indicate how many cpus can be used by Snakemake to assemble the samples (the more cpus you can use, the faster the assemblies will be completed).
 
-The assemblies for each sample will be saved in the results folder.
+The assemblies for each sample are be saved in the results folder.
 
 ## Troubleshooting
 
