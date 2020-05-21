@@ -1,3 +1,5 @@
+configfile: "config.yaml"
+
 workdir: config["workdir"]
 
 rule all:
