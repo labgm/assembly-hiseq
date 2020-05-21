@@ -17,8 +17,8 @@ adapterremoval:
     optional: '--trimns --trimqualities --collapse'
 
 # CD-HIT parameters
-# ch-program can be blastp, blastn, megablast or psiblast
-# ch-circle can be 1 or 0
+# program can be blastp, blastn, megablast or psiblast
+# circle can be 1 or 0
 cdhit:
     identity: 0.98
     program: 'blastn'
