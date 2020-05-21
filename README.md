@@ -12,6 +12,19 @@ With conda installed, we can create a new environment with snakemake by running 
 conda create -c conda-forge -c bioconda -n assembly-hiseq snakemake -y
 ```
 
+To copy the contents of this repository, run the following command:
+
+```
+git clone https://github.com/softwarecomputationalbiologyufpa/assembly-hiseq.git
+```
+
+After cloning the repository, it is possible to enter the newly created directory and modify the config file with the appropriate parameters and samples:
+
+```
+cd assembly-hiseq
+nano config.yaml
+```
+
 ## Running
 
 After a successful installation, we can activate the newly created environment and run the pipeline (please don't forget to modify the config file with your samples and parameters in advance).
