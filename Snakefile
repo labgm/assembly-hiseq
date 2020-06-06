@@ -68,7 +68,7 @@ rule edena:
     threads:
         4
     resources:
-        mem_mb = config["mem_mb"]
+        mem_mb = 102400
     shell:
         """
         edena -nThreads {threads} -paired {input.forward} {input.reverse} -prefix {params.prefix} > {log.stdout} 2> {log.stderr}
@@ -158,7 +158,7 @@ rule spades:
     threads:
         4
     resources:
-        mem_gb = int(round(config["mem_mb"] / 1024))
+        mem_gb = 100
     shell:
         """
         kmers=$(tail -n +2 {input.kmerstream} | sort -g -r -k3 | cut -f2 | head -n 5 | tr '\\n' ',' | rev | cut -c 2- | rev)
@@ -188,7 +188,7 @@ rule unicycler:
     threads:
         4
     resources:
-        mem_mb = config["mem_mb"]
+        mem_mb = 102400
     shell:
         """
         unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
@@ -230,7 +230,7 @@ rule cdhit:
     threads:
         1
     resources:
-        mem_mb = config["mem_mb"]
+        mem_mb = 102400
     conda:
         "envs/cdhit.yaml"
     shell:
@@ -261,7 +261,7 @@ rule quast:
     threads:
         4
     resources:
-        mem_mb = config["mem_mb"]
+        mem_mb = 102400
     shell:
         """
         params=()
@@ -309,7 +309,7 @@ rule prokka:
     threads:
         4
     resources:
-        mem_mb = config["mem_mb"]
+        mem_mb = 102400
     shell:
         """
         export PATH={params.prokka}:$PATH
