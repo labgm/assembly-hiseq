@@ -27,7 +27,7 @@ rule fastqc:
     benchmark:
         "results/{sample}/fastqc/benchmark.txt"
     threads:
-        6
+        4
     shell:
         "fastqc --threads {threads} --outdir {params.outdir} {input.forward} {input.reverse} > {log.stdout} 2> {log.stderr}"
 
@@ -66,7 +66,7 @@ rule edena:
     benchmark:
         "results/{sample}/edena/benchmark.txt"
     threads:
-        12
+        4
     resources:
         mem_mb = config["mem_mb"]
     shell:
@@ -102,7 +102,7 @@ rule adapterremoval:
     benchmark:
         "results/{sample}/adapterremoval/benchmark.txt"
     threads:
-        6
+        4
     shell:
         """
         AdapterRemoval --file1 {input.forward} --file2 {input.reverse} --threads {threads} --output1 {output.forward} --output2 {output.reverse} --singleton {output.singleton} --outputcollapsed {params.collapsed} --outputcollapsedtruncated {params.collapsed_truncated} --discarded {output.discarded} {params.optional} --minquality {params.minquality} --minlength {params.minlength} --minalignmentlength {params.minalignmentlength} --mm {params.mm} --settings {output.settings} > {log.stdout} 2> {log.stderr}
@@ -126,7 +126,7 @@ rule kmerstream:
     benchmark:
         "results/{sample}/kmerstream/benchmark.txt"
     threads:
-        6
+        4
     shell:
         """
         params=()
@@ -156,7 +156,7 @@ rule spades:
     benchmark:
         "results/{sample}/spades/benchmark.txt"
     threads:
-        12
+        4
     resources:
         mem_gb = int(round(config["mem_mb"] / 1024))
     shell:
@@ -186,7 +186,7 @@ rule unicycler:
     benchmark:
         "results/{sample}/unicycler/benchmark.txt"
     threads:
-        12
+        4
     resources:
         mem_mb = config["mem_mb"]
     shell:
@@ -259,7 +259,7 @@ rule quast:
     benchmark:
         "results/{sample}/quast/benchmark.txt"
     threads:
-        6
+        4
     resources:
         mem_mb = config["mem_mb"]
     shell:
@@ -307,7 +307,7 @@ rule prokka:
     benchmark:
         "results/{sample}/prokka/benchmark.txt"
     threads:
-        6
+        4
     resources:
         mem_mb = config["mem_mb"]
     shell:
