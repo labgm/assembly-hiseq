@@ -27,7 +27,7 @@ rule fastqc:
     benchmark:
         "results/{sample}/fastqc/benchmark.txt"
     threads:
-        4
+        config["threads"]
     shell:
         "fastqc --threads {threads} --outdir {params.outdir} {input.forward} {input.reverse} > {log.stdout} 2> {log.stderr}"
 
@@ -40,8 +40,6 @@ rule extract:
         reverse = "results/{sample}/extract-file/{sample}_2.fastq"
     conda:
         "envs/extract-file.yaml"
-    threads:
-        1
     benchmark:
         "results/{sample}/extract-file/benchmark.txt"
     shell:
@@ -66,7 +64,7 @@ rule edena:
     benchmark:
         "results/{sample}/edena/benchmark.txt"
     threads:
-        4
+        config["threads"]
     resources:
         mem_mb = 102400
     shell:
@@ -102,7 +100,7 @@ rule adapterremoval:
     benchmark:
         "results/{sample}/adapterremoval/benchmark.txt"
     threads:
-        4
+        config["threads"]
     shell:
         """
         AdapterRemoval --file1 {input.forward} --file2 {input.reverse} --threads {threads} --output1 {output.forward} --output2 {output.reverse} --singleton {output.singleton} --outputcollapsed {params.collapsed} --outputcollapsedtruncated {params.collapsed_truncated} --discarded {output.discarded} {params.optional} --minquality {params.minquality} --minlength {params.minlength} --minalignmentlength {params.minalignmentlength} --mm {params.mm} --settings {output.settings} > {log.stdout} 2> {log.stderr}
@@ -126,7 +124,7 @@ rule kmerstream:
     benchmark:
         "results/{sample}/kmerstream/benchmark.txt"
     threads:
-        4
+        config["threads"]
     shell:
         """
         params=()
@@ -156,7 +154,7 @@ rule spades:
     benchmark:
         "results/{sample}/spades/benchmark.txt"
     threads:
-        4
+        config["threads"]
     resources:
         mem_gb = 100
     shell:
@@ -186,7 +184,7 @@ rule unicycler:
     benchmark:
         "results/{sample}/unicycler/benchmark.txt"
     threads:
-        4
+        config["threads"]
     resources:
         mem_mb = 102400
     shell:
@@ -201,8 +199,6 @@ rule install_cdhit:
         "results/bin/cdhit/psi-cd-hit/psi-cd-hit.pl"
     conda:
         "envs/cdhit.yaml"
-    threads:
-        1
     shell:
         """
         rm -rf results/bin/cdhit
@@ -227,8 +223,6 @@ rule cdhit:
         stderr = "results/{sample}/cdhit/log-stderr.txt"
     benchmark:
         "results/{sample}/cdhit/benchmark.txt"
-    threads:
-        1
     resources:
         mem_mb = 102400
     conda:
@@ -259,7 +253,7 @@ rule quast:
     benchmark:
         "results/{sample}/quast/benchmark.txt"
     threads:
-        4
+        config["threads"]
     resources:
         mem_mb = 102400
     shell:
@@ -281,8 +275,6 @@ rule install_prokka:
         "results/bin/prokka/binaries/linux/tbl2asn"
     conda:
         "envs/prokka.yaml"
-    threads:
-        1
     shell:
         """
         rm -rf results/bin/prokka
@@ -307,7 +299,7 @@ rule prokka:
     benchmark:
         "results/{sample}/prokka/benchmark.txt"
     threads:
-        4
+        config["threads"]
     resources:
         mem_mb = 102400
     shell:
