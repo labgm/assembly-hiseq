@@ -37,7 +37,7 @@ Copy the output of the pwd command and update the workdir on the config.yaml fil
 nano config.yaml
 ```
 
-It is a good idea to run the pipeline with the test sample provided for the first time to test your installation. However, to add your samples, simply add them to the samples section of the config file.
+It is a good idea to run the pipeline with the test sample provided for the first time to test your installation. However, to add your samples, simply append them to the samples section of the config file.
 
 ```
 samples:
