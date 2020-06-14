@@ -1,6 +1,6 @@
 workdir: '/home/fabio/Desktop/assembly-hiseq/'
 
-threads: 12
+threads: 4
 mem_mb: 256000
 
 samples:
