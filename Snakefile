@@ -6,7 +6,8 @@ rule all:
     input:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
         fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
-        prokka = ["results/" + sample + "/prokka/" + sample + ".gbk" for sample in config["samples"]]
+        prokka = ["results/" + sample + "/prokka/" + sample + ".gbk" for sample in config["samples"]],
+        quast = ["results/" + sample + "/quast/report.tsv" for sample in config["samples"]]
 
 # TODO: remember to remove files extracted at the end of the pipeline
 

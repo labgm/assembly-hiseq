@@ -1,4 +1,4 @@
-workdir: '/home/fabio/Desktop/assembly-hiseq/'
+workdir: '/home/debian/assembly-hiseq/'
 
 threads: 4
 mem_mb: 256000
