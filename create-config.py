@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+from tqdm import tqdm
 from os import path
 import argparse
 import glob
@@ -37,15 +38,14 @@ if path.isdir(args.input_folder):
     config.write("    reference: 'empty'\n")
     config.write("    genes: 'empty'\n\n")
     config.write("samples:\n")
-    forward = glob.iglob(args.input_folder + "/**/*1.*", recursive=True)
-    reverse = glob.iglob(args.input_folder + "/**/*2.*", recursive=True)
-    for f in forward:
-        partition = f.partition("1.")
-        r = partition[0] + "2." + partition[2]
-        print(f, r)
-    config.write("    'sample':\n")
-    config.write("        forward: 'data/sample_1.fq.gz'\n")
-    config.write("        reverse: 'data/sample_2.fq.gz'\n")
+    forward = glob.iglob(args.input_folder + "/**/*_1.*", recursive=True)
+    for f in tqdm(forward):
+        partition = f.partition("_1.")
+        sample = partition[0].split("/")[-1]
+        r = partition[0] + "_2." + partition[2]
+        config.write("    '%s':\n" % (sample))
+        config.write("        forward: '%s'\n" % (f))
+        config.write("        reverse: '%s'\n" % (r))
     config.close()
 else:
     print("Please provide a folder containing FASTQ files")

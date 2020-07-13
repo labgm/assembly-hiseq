@@ -25,6 +25,6 @@ quast:
     genes: 'empty'
 
 samples:
-    'sample':
-        forward: 'data/sample_1.fq.gz'
-        reverse: 'data/sample_2.fq.gz'
+    'NG-19302_B208_lib327116_6377_1':
+        forward: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_1.fastq.gz'
+        reverse: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_2.fastq.gz'
