@@ -39,7 +39,9 @@ if path.isdir(args.input_folder):
     config.write("samples:\n")
     forward = glob.iglob(args.input_folder + "/**/*1.*", recursive=True)
     reverse = glob.iglob(args.input_folder + "/**/*2.*", recursive=True)
-    for f, r in zip(forward, reverse):
+    for f in forward:
+        partition = f.partition("1.")
+        r = partition[0] + "2." + partition[2]
         print(f, r)
     config.write("    'sample':\n")
     config.write("        forward: 'data/sample_1.fq.gz'\n")
