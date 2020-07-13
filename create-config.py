@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from tqdm import tqdm
 from os import path
 import argparse
 import glob
@@ -14,7 +13,6 @@ parser.add_argument('--mem_mb', type=int, default=256000, help='Maximum amount o
 args = parser.parse_args()
 
 if path.isdir(args.input_folder):
-    print("Creating config file...")
     config = open(args.config_file, "w")
     config.write("workdir: %s\n\n" % (os.getcwd()))
     config.write("threads: %d\n" % (args.threads))
@@ -39,7 +37,7 @@ if path.isdir(args.input_folder):
     config.write("    genes: 'empty'\n\n")
     config.write("samples:\n")
     forward = glob.iglob(args.input_folder + "/**/*_1.*", recursive=True)
-    for f in tqdm(forward):
+    for f in forward:
         partition = f.partition("_1.")
         sample = partition[0].split("/")[-1]
         r = partition[0] + "_2." + partition[2]
