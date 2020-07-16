@@ -57,7 +57,7 @@ After a successful installation, we can activate the newly created environment a
 
 ```
 conda activate assembly-hiseq
-snakemake --use-conda --cores 12
+snakemake -kpr --use-conda --cores 12
 ```
 
 The parameter --use-conda is necessary to indicate that conda will be used to manage the software dependencies of the pipeline, while the parameter --cores tells Snakemake how many cpus can be used to assemble the samples (the more cpus you can spare, the faster the assemblies will be completed).
