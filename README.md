@@ -49,7 +49,11 @@ samples:
         reverse: 'data/another_sample/another_sample_2.fastq.gz'
 ```
 
-**It is important that you write the identifier of the sample with the common prefix between the paired FASTQ files, as shown above, otherwise FastQC will throw an error.**
+It is important that you write the identifier of the sample with the common prefix between the paired FASTQ files, as shown above, otherwise FastQC will throw an error. Alternatively, you can also run the script create-config.py provided in the root folder of the pipeline. To run it, simply provide the path of the folder containing your paired FASTQ files and it will look for them recursively and update the config file, for example:
+
+```
+./create-config.py data
+```
 
 ## Running
 
