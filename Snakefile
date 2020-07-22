@@ -305,7 +305,8 @@ rule install_prokka:
 
 rule prokka:
     input:
-        "results/{sample}/mob_recon/chromosome.fasta",
+        prokka = "results/bin/prokka/binaries/linux/tbl2asn",
+        chromosome = "results/{sample}/mob_recon/chromosome.fasta"
     params:
         outdir = "results/{sample}/prokka",
         prefix = "{sample}",
@@ -324,5 +325,5 @@ rule prokka:
     shell:
         """
         export PATH={params.prokka}:$PATH
-        prokka --force --cpus {threads} --outdir {params.outdir} --prefix {params.prefix} {input} --centre X --compliant > {log.stdout} 2> {log.stderr}
+        prokka --force --cpus {threads} --outdir {params.outdir} --prefix {params.prefix} {input.chromosome} --centre X --compliant > {log.stdout} 2> {log.stderr}
         """
