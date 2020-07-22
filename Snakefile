@@ -67,7 +67,7 @@ rule edena:
     threads:
         config["threads"]
     resources:
-        mem_mb = 102400
+        mem_mb = config["mem_mb"]
     shell:
         """
         edena -nThreads {threads} -paired {input.forward} {input.reverse} -prefix {params.prefix} > {log.stdout} 2> {log.stderr}
@@ -187,7 +187,7 @@ rule unicycler:
     threads:
         config["threads"]
     resources:
-        mem_mb = 102400
+        mem_mb = config["mem_mb"]
     shell:
         """
         unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
@@ -225,7 +225,7 @@ rule cdhit:
     benchmark:
         "results/{sample}/cdhit/benchmark.txt"
     resources:
-        mem_mb = 102400
+        mem_mb = config["mem_mb"]
     conda:
         "envs/cdhit.yaml"
     shell:
@@ -256,7 +256,7 @@ rule quast:
     threads:
         config["threads"]
     resources:
-        mem_mb = 102400
+        mem_mb = config["mem_mb"]
     shell:
         """
         params=()
@@ -267,6 +267,27 @@ rule quast:
             params+=(-g {params.genes})
         fi
         quast.py "${{params[@]}}" -L -t {threads} -o {params.prefix} {input.edena} {input.spades} {input.unicycler} {input.cdhit} > {log.stdout} 2> {log.stderr}
+        """
+
+rule mob_recon:
+    input:
+        "results/{sample}/cdhit/contigs.fasta"
+    params:
+        output = "results/{sample}/mob_recon"
+    output:
+        "results/{sample}/mob_recon/chromosome.fasta"
+    log:
+        stdout = "results/{sample}/mob_recon/log-stdout.txt",
+        stderr = "results/{sample}/mob_recon/log-stderr.txt"
+    conda:
+        "envs/mobsuite.yaml"
+    benchmark:
+        "results/{sample}/mob_recon/benchmark.txt"
+    threads:
+        config["threads"]
+    shell:
+        """
+        mob_recon --force -u -c -t -n {threads} -i {input} -o {params.output} > {log.stdout} 2> {log.stderr}
         """
 
 # Cloning the prokka repository because tbl2asn in bioconda is old and throws errors
@@ -284,8 +305,7 @@ rule install_prokka:
 
 rule prokka:
     input:
-        cdhit = "results/{sample}/cdhit/contigs.fasta",
-        prokka = "results/bin/prokka/binaries/linux/tbl2asn"
+        "results/{sample}/mob_recon/chromosome.fasta",
     params:
         outdir = "results/{sample}/prokka",
         prefix = "{sample}",
@@ -301,8 +321,6 @@ rule prokka:
         "results/{sample}/prokka/benchmark.txt"
     threads:
         config["threads"]
-    resources:
-        mem_mb = 102400
     shell:
         """
         export PATH={params.prokka}:$PATH
