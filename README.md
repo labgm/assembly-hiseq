@@ -21,7 +21,7 @@ cp /home/fabio/anaconda3/bin/activate /home/fabio/anaconda3/envs/assembly-hiseq/
 To copy the contents of this repository, run the following command:
 
 ```
-git clone https://github.com/softwarecomputationalbiologyufpa/assembly-hiseq.git
+git clone https://github.com/engbiopct/assembly-hiseq.git
 ```
 
 After cloning the repository, it is possible to enter the newly created directory and modify the config file with the appropriate parameters and samples:
