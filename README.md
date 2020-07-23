@@ -67,3 +67,16 @@ snakemake -kpr --use-conda --cores 12
 The parameter --use-conda is necessary to indicate that conda will be used to manage the software dependencies of the pipeline, while the parameter --cores tells Snakemake how many cpus can be used to assemble the samples (the more cpus you can spare, the faster the assemblies will be completed).
 
 The assemblies for each sample are saved in the results folder.
+
+## Tools in the pipeline
+
+- FastQC
+- Edena
+- Unicycler
+- AdapterRemoval v2
+- KmerStream
+- SPAdes
+- CD-HIT
+- QUAST
+- MOB-recon
+- Prokka
