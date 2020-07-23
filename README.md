@@ -68,7 +68,7 @@ The parameter --use-conda is necessary to indicate that conda will be used to ma
 
 The assemblies for each sample are saved in the results folder.
 
-## Tools in the pipeline
+## Tools used in the pipeline
 
 - FastQC
 - Edena
