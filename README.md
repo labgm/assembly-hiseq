@@ -70,13 +70,13 @@ The assemblies for each sample are saved in the results folder.
 
 ## Tools used in the pipeline
 
-- FastQC
-- Edena
-- Unicycler
-- AdapterRemoval v2
-- KmerStream
-- SPAdes
-- CD-HIT
-- QUAST
-- MOB-recon
-- Prokka
+* FastQC
+* Edena
+* Unicycler
+* AdapterRemoval v2
+* KmerStream
+* SPAdes
+* CD-HIT
+* QUAST
+* MOB-recon
+* Prokka
