@@ -80,3 +80,6 @@ The assemblies for each sample are saved in the results folder.
 * QUAST
 * MOB-recon
 * Prokka
+
+## Workflow
+![Workflow](https://raw.githubusercontent.com/engbiopct/assembly-hiseq/master/workflow.svg)
