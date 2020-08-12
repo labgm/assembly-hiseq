@@ -6,6 +6,7 @@ rule all:
     input:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
         fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
+        filter = ["results/" + sample + "/mob_recon/chromosome_filtered.fasta" for sample in config["samples"]],
         prokka = ["results/" + sample + "/prokka/" + sample + ".gbk" for sample in config["samples"]],
         quast = ["results/" + sample + "/quast/report.tsv" for sample in config["samples"]]
 
@@ -288,6 +289,20 @@ rule mob_recon:
     shell:
         """
         mob_recon --force -u -c -t -n {threads} -i {input} -o {params.output} > {log.stdout} 2> {log.stderr}
+        """
+
+rule filter_contigs:
+    input:
+        "results/{sample}/mob_recon/chromosome.fasta"
+    output:
+        "results/{sample}/mob_recon/chromosome_filtered.fasta"
+    conda:
+        "envs/filter_contigs.yaml"
+    params:
+        length = config['contigs']['minlength']
+    shell:
+        """
+        ./scripts/filter_contigs.py {params.length} {input} {output}
         """
 
 # Cloning the prokka repository because tbl2asn in bioconda is old and throws errors
