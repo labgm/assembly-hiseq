@@ -44,6 +44,9 @@ if path.isdir(args.input_folder):
         config.write("    '%s':\n" % (sample))
         config.write("        forward: '%s'\n" % (f))
         config.write("        reverse: '%s'\n" % (r))
+    config.write("# Mininum length of contigs")
+    config.write("contigs:")
+    config.write("    minlength: 200")
     config.close()
 else:
     print("Please provide a folder containing FASTQ files")
