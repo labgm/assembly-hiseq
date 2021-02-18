@@ -13,6 +13,7 @@ case $1 in
 *.zip) unzip -p $1 > $2 ;;
 *.Z) uncompress -dck $1 > $2 ;;
 *.7z) 7z x -so $1 > $2 ;;
+*.fastq) cp $1 $2;;
 *) echo "'$1' could not be extracted" ;;
 esac
 else
