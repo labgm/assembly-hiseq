@@ -5,7 +5,7 @@ workdir: config["workdir"]
 rule all:
     input:
         fastqc_forward = ["results/" + sample + "/fastqc/" + sample + "_1_fastqc.html" for sample in config["samples"]],
-        fastqc_reverse = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
+        fastqc_reverseR = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
         filter = ["results/" + sample + "/mob_recon/chromosome_filtered.fasta" for sample in config["samples"]],
         prokka = ["results/" + sample + "/prokka/" + sample + ".gbk" for sample in config["samples"]],
         quast = ["results/" + sample + "/quast/report.tsv" for sample in config["samples"]]
@@ -15,12 +15,12 @@ rule all:
 rule fastqc:
     input:
         forward = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["forward"]),
-        reverse = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["reverse"])
+        reverseR = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["reverseR"])
     params:
         outdir = "results/{sample}/fastqc"
     output:
         forward = "results/{sample}/fastqc/{sample}_1_fastqc.html",
-        reverse = "results/{sample}/fastqc/{sample}_2_fastqc.html"
+        reverseR = "results/{sample}/fastqc/{sample}_2_fastqc.html"
     log:
         stdout = "results/{sample}/fastqc/log-stdout.txt",
         stderr = "results/{sample}/fastqc/log-stderr.txt"
@@ -31,15 +31,15 @@ rule fastqc:
     threads:
         config["threads"]
     shell:
-        "fastqc --threads {threads} --outdir {params.outdir} {input.forward} {input.reverse} > {log.stdout} 2> {log.stderr}"
+        "fastqc --threads {threads} --outdir {params.outdir} {input.forward} {input.reverseR} > {log.stdout} 2> {log.stderr}"
 
 rule extract:
     input:
         forward = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["forward"]),
-        reverse = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["reverse"])
+        reverseR = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["reverseR"])
     output:
         forward = "results/{sample}/extract-file/{sample}_1.fastq",
-        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
+        reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
     conda:
         "envs/extract-file.yaml"
     benchmark:
@@ -47,15 +47,17 @@ rule extract:
     shell:
         """
         ./scripts/extract-file.sh {input.forward} {output.forward}
-        ./scripts/extract-file.sh {input.reverse} {output.reverse}
+        ./scripts/extract-file.sh {input.reverseR} {output.reverseR}
         """
 
 rule edena:
     input:
         forward = "results/{sample}/extract-file/{sample}_1.fastq",
-        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
+        reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
     params:
-        prefix = "results/{sample}/edena/{sample}"
+        prefix = "results/{sample}/edena/{sample}",
+	edena_r1 = "results/{sample}/adapterremoval/{sample}_1_edena.fastq",
+	edena_r2 = "results/{sample}/adapterremoval/{sample}_2_edena.fastq"
     output:
         "results/{sample}/edena/{sample}_contigs.fasta"
     log:
@@ -71,15 +73,17 @@ rule edena:
         mem_mb = config["mem_mb"]
     shell:
         """
-        edena -nThreads {threads} -paired {input.forward} {input.reverse} -prefix {params.prefix} > {log.stdout} 2> {log.stderr}
-        edena -edenaFile {params.prefix}.ovl -prefix {params.prefix} >> {log.stdout} 2>> {log.stderr}
+        ./scripts/filter_reads.py 150 {input.forward} {params.edena_r1}
+	./scripts/filter_reads.py 150 {input.reverseR} {params.edena_r2}
+	edena -nThreads {threads} -paired {params.edena_r1} {params.edena_r2} -prefix {params.prefix} > {log.stdout} 2> {log.stderr}
+	edena -edenaFile {params.prefix}.ovl -prefix {params.prefix} >> {log.stdout} 2>> {log.stderr}
         rm {params.prefix}.ovl
         """
 
 rule adapterremoval:
     input:
         forward = "results/{sample}/extract-file/{sample}_1.fastq",
-        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
+        reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
     params:
         minquality = config['adapterremoval']['minquality'],
         minlength = config['adapterremoval']['minlength'],
@@ -90,7 +94,7 @@ rule adapterremoval:
         collapsed_truncated = "results/{sample}/adapterremoval/{sample}_collapsed_truncated.fastq"
     output:
         forward = "results/{sample}/adapterremoval/{sample}_1.fastq",
-        reverse = "results/{sample}/adapterremoval/{sample}_2.fastq",
+        reverseR = "results/{sample}/adapterremoval/{sample}_2.fastq",
         singleton = "results/{sample}/adapterremoval/{sample}_singleton.fastq",
         discarded = "results/{sample}/adapterremoval/{sample}_discarded.fastq",
         settings = "results/{sample}/adapterremoval/{sample}_settings"
@@ -105,13 +109,13 @@ rule adapterremoval:
         config["threads"]
     shell:
         """
-        AdapterRemoval --file1 {input.forward} --file2 {input.reverse} --threads {threads} --output1 {output.forward} --output2 {output.reverse} --singleton {output.singleton} --outputcollapsed {params.collapsed} --outputcollapsedtruncated {params.collapsed_truncated} --discarded {output.discarded} {params.optional} --minquality {params.minquality} --minlength {params.minlength} --minalignmentlength {params.minalignmentlength} --mm {params.mm} --settings {output.settings} > {log.stdout} 2> {log.stderr}
+        AdapterRemoval --file1 {input.forward} --file2 {input.reverseR} --threads {threads} --output1 {output.forward} --output2 {output.reverseR} --singleton {output.singleton} --outputcollapsed {params.collapsed} --outputcollapsedtruncated {params.collapsed_truncated} --discarded {output.discarded} {params.optional} --minquality {params.minquality} --minlength {params.minlength} --minalignmentlength {params.minalignmentlength} --mm {params.mm} --settings {output.settings} > {log.stdout} 2> {log.stderr}
         """
 
 rule kmerstream:
     input:
         forward = "results/{sample}/adapterremoval/{sample}_1.fastq",
-        reverse = "results/{sample}/adapterremoval/{sample}_2.fastq",
+        reverseR = "results/{sample}/adapterremoval/{sample}_2.fastq",
         singleton = "results/{sample}/adapterremoval/{sample}_singleton.fastq"
     params:
         collapsed = "results/{sample}/adapterremoval/{sample}_collapsed.fastq",
@@ -133,14 +137,14 @@ rule kmerstream:
         if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
             params+=({params.collapsed} {params.collapsed_truncated})
         fi
-        KmerStream --kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127 --output={output} --threads={threads} --tsv {input.forward} {input.reverse} {input.singleton} "${{params[@]}}"
+        KmerStream --kmer-size=7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127 --output={output} --threads={threads} --tsv {input.forward} {input.reverseR} {input.singleton} "${{params[@]}}"
         """
 
 rule spades:
     input:
         kmerstream = "results/{sample}/kmerstream/ar-{sample}.tsv",
         forward = "results/{sample}/adapterremoval/{sample}_1.fastq",
-        reverse = "results/{sample}/adapterremoval/{sample}_2.fastq",
+        reverseR = "results/{sample}/adapterremoval/{sample}_2.fastq",
         singleton = "results/{sample}/adapterremoval/{sample}_singleton.fastq"
     params:
         prefix = "results/{sample}/spades",
@@ -166,14 +170,14 @@ rule spades:
         if [[ -f {params.collapsed} && -f {params.collapsed_truncated} ]]; then
             params+=(--merged {params.collapsed} --merged {params.collapsed_truncated})
         fi
-        spades.py --memory {resources.mem_gb} -1 {input.forward} -2 {input.reverse} -s {input.singleton} "${{params[@]}}" --threads {threads} -k $kmers -o {params.prefix} > {log.stdout} 2> {log.stderr}
+        spades.py --memory {resources.mem_gb} -1 {input.forward} -2 {input.reverseR} -s {input.singleton} "${{params[@]}}" --threads {threads} -k $kmers -o {params.prefix} > {log.stdout} 2> {log.stderr}
         rm -rf {params.prefix}/corrected
         """
 
 rule unicycler:
     input:
         forward = "results/{sample}/extract-file/{sample}_1.fastq",
-        reverse = "results/{sample}/extract-file/{sample}_2.fastq"
+        reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
     params:
         prefix = "results/{sample}/unicycler"
     output:
@@ -191,7 +195,7 @@ rule unicycler:
         mem_mb = config["mem_mb"]
     shell:
         """
-        unicycler -1 {input.forward} -2 {input.reverse} -o {params.prefix} > {log.stdout} 2> {log.stderr}
+        unicycler -1 {input.forward} -2 {input.reverseR} -o {params.prefix} > {log.stdout} 2> {log.stderr}
         """
 
 # Cloning the cdhit repository because psi-cd-hit.pl is not available in bioconda

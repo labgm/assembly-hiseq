@@ -1,7 +1,8 @@
-workdir: /home/fabio/Desktop/assembly-hiseq
+workdir: /home/rommel/assembly-hiseq
 
 threads: 4
 mem_mb: 256000
+read_length: 150
 
 # Adapter Removal parameters
 adapterremoval:
@@ -25,9 +26,9 @@ quast:
     genes: 'empty'
 
 samples:
-    'NG-19302_B208_lib327116_6377_1':
-        forward: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_1.fastq.gz'
-        reverse: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_2.fastq.gz'
+    '39931_S32':
+        forward: 'data/39931_S32_1.fastq.gz'
+        reverseR: 'data/39931_S32_2.fastq.gz'
 
 # Mininum length of contigs
 contigs:

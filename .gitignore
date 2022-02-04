@@ -1,2 +1,6 @@
 .snakemake/
 results/
+SnakefileBKP
+config.yaml_BKP
+data/
+results/
