@@ -43,7 +43,7 @@ if path.isdir(args.input_folder):
         r = partition[0] + "_2." + partition[2]
         config.write("    '%s':\n" % (sample))
         config.write("        forward: '%s'\n" % (f))
-        config.write("        reverse: '%s'\n" % (r))
+        config.write("        reverseR: '%s'\n" % (r))
     config.write("\n# Mininum length of contigs\n")
     config.write("contigs:\n")
     config.write("    minlength: 200\n")
