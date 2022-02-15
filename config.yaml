@@ -2,7 +2,6 @@ workdir: /home/rommel/assembly-hiseq
 
 threads: 4
 mem_mb: 256000
-read_length: 150
 
 # Adapter Removal parameters
 adapterremoval:
