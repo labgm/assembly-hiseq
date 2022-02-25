@@ -34,6 +34,7 @@ rule fastqc:
         "fastqc --threads {threads} --outdir {params.outdir} {input.forward} {input.reverseR} > {log.stdout} 2> {log.stderr}"
 
 rule extract:
+    priority: 10
     input:
         forward = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["forward"]),
         reverseR = lambda wildcards: os.path.abspath(config["samples"][wildcards.sample]["reverseR"])
@@ -50,37 +51,8 @@ rule extract:
         ./scripts/extract-file.sh {input.reverseR} {output.reverseR}
         """
 
-rule edena:
-    input:
-        forward = "results/{sample}/extract-file/{sample}_1.fastq",
-        reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
-    params:
-        prefix = "results/{sample}/edena/{sample}",
-	edena_r1 = "results/{sample}/adapterremoval/{sample}_1_edena.fastq",
-	edena_r2 = "results/{sample}/adapterremoval/{sample}_2_edena.fastq"
-    output:
-        "results/{sample}/edena/{sample}_contigs.fasta"
-    log:
-        stdout = "results/{sample}/edena/log-stdout.txt",
-        stderr = "results/{sample}/edena/log-stderr.txt"
-    conda:
-        "envs/edena.yaml"
-    benchmark:
-        "results/{sample}/edena/benchmark.txt"
-    threads:
-        config["threads"]
-    resources:
-        mem_mb = config["mem_mb"]
-    shell:
-        """
-        ./scripts/filter_reads.py 150 {input.forward} {params.edena_r1}
-	./scripts/filter_reads.py 150 {input.reverseR} {params.edena_r2}
-	edena -nThreads {threads} -paired {params.edena_r1} {params.edena_r2} -prefix {params.prefix} > {log.stdout} 2> {log.stderr}
-	edena -edenaFile {params.prefix}.ovl -prefix {params.prefix} >> {log.stdout} 2>> {log.stderr}
-        rm {params.prefix}.ovl
-        """
-
 rule adapterremoval:
+    priority: 9
     input:
         forward = "results/{sample}/extract-file/{sample}_1.fastq",
         reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
@@ -110,6 +82,36 @@ rule adapterremoval:
     shell:
         """
         AdapterRemoval --file1 {input.forward} --file2 {input.reverseR} --threads {threads} --output1 {output.forward} --output2 {output.reverseR} --singleton {output.singleton} --outputcollapsed {params.collapsed} --outputcollapsedtruncated {params.collapsed_truncated} --discarded {output.discarded} {params.optional} --minquality {params.minquality} --minlength {params.minlength} --minalignmentlength {params.minalignmentlength} --mm {params.mm} --settings {output.settings} > {log.stdout} 2> {log.stderr}
+        """
+
+rule edena:
+    input:
+        forward = "results/{sample}/extract-file/{sample}_1.fastq",
+        reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
+    params:
+        prefix = "results/{sample}/edena/{sample}",
+        edena_r1 = "results/{sample}/adapterremoval/{sample}_1_edena.fastq",
+        edena_r2 = "results/{sample}/adapterremoval/{sample}_2_edena.fastq"
+    output:
+        "results/{sample}/edena/{sample}_contigs.fasta"
+    log:
+        stdout = "results/{sample}/edena/log-stdout.txt",
+        stderr = "results/{sample}/edena/log-stderr.txt"
+    conda:
+        "envs/edena.yaml"
+    benchmark:
+        "results/{sample}/edena/benchmark.txt"
+    threads:  
+        config["threads"]
+    resources:
+        mem_mb = config["mem_mb"]
+    shell:
+        """
+        ./scripts/filter_reads.py 150 {input.forward} {params.edena_r1}  > {log.stdout} 2> {log.stderr}
+        ./scripts/filter_reads.py 150 {input.reverseR} {params.edena_r2}  > {log.stdout} 2> {log.stderr}
+        edena -nThreads {threads} -paired {params.edena_r1} {params.edena_r2} -prefix {params.prefix} > {log.stdout} 2> {log.stderr}
+        edena -edenaFile {params.prefix}.ovl -prefix {params.prefix} >> {log.stdout} 2>> {log.stderr}
+        rm {params.prefix}.ovl
         """
 
 rule kmerstream:
@@ -176,8 +178,8 @@ rule spades:
 
 rule unicycler:
     input:
-        forward = "results/{sample}/extract-file/{sample}_1.fastq",
-        reverseR = "results/{sample}/extract-file/{sample}_2.fastq"
+        forward = "results/{sample}/adapterremoval/{sample}_1.fastq",
+        reverseR = "results/{sample}/adapterremoval/{sample}_2.fastq"
     params:
         prefix = "results/{sample}/unicycler"
     output:
@@ -248,7 +250,8 @@ rule quast:
     params:
         prefix = "results/{sample}/quast",
         reference = config['quast']['reference'],
-        genes = config['quast']['genes']
+        genes = config['quast']['genes'],
+	cminlength= config['contigs']['minlength']
     output:
         "results/{sample}/quast/report.tsv"
     log:
@@ -271,7 +274,7 @@ rule quast:
         if [ -f {params.genes} ]; then
             params+=(-g {params.genes})
         fi
-        quast.py "${{params[@]}}" -L -t {threads} -o {params.prefix} {input.edena} {input.spades} {input.unicycler} {input.cdhit} > {log.stdout} 2> {log.stderr}
+        quast.py "${{params[@]}}" -L -t {threads} -m {params.cminlength} -o {params.prefix} {input.edena} {input.spades} {input.unicycler} {input.cdhit} > {log.stdout} 2> {log.stderr}
         """
 
 rule mob_recon:
@@ -345,4 +348,20 @@ rule prokka:
         """
         export PATH={params.prokka}:$PATH
         prokka --force --cpus {threads} --outdir {params.outdir} --prefix {params.prefix} {input.chromosome} --centre X --compliant > {log.stdout} 2> {log.stderr}
+        """
+
+rule cleardir:
+    input:
+         "results/{sample}/prokka/{sample}.gbk"
+    output:
+         "results/{sample}/clear/{sample}.txt"
+    conda:
+         "envs/cleardir.yaml"
+    shell:
+        """
+        echo "Removing fastq files..."
+        rm -rf results/{sample}/extract-file/*.fastq
+        rm -rf results/{sample}/adapterremoval/*_[0-9].fastq
+        rm -rf results/{sample}/adapterremoval/*_[0-9]_edena.fastq
+        echo "Fastq files removed..."
         """
