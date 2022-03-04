@@ -8,9 +8,8 @@ rule all:
         fastqc_reverseR = ["results/" + sample + "/fastqc/" + sample + "_2_fastqc.html" for sample in config["samples"]],
         filter = ["results/" + sample + "/mob_recon/chromosome_filtered.fasta" for sample in config["samples"]],
         prokka = ["results/" + sample + "/prokka/" + sample + ".gbk" for sample in config["samples"]],
-        quast = ["results/" + sample + "/quast/report.tsv" for sample in config["samples"]],
-        cleardir = ["results/" + sample + "/clear/" + sample + ".txt" for sample in config["samples"]]
- 
+        quast = ["results/" + sample + "/quast/report.tsv" for sample in config["samples"]]
+
 # TODO: remember to remove files extracted at the end of the pipeline
 
 rule fastqc:
@@ -328,11 +327,12 @@ rule install_prokka:
 
 rule prokka:
     input:
+        prokka = "results/bin/prokka/binaries/linux/tbl2asn",
         chromosome = "results/{sample}/mob_recon/chromosome_filtered.fasta"
     params:
         outdir = "results/{sample}/prokka",
         prefix = "{sample}",
-        tbl2asn = "results/bin/prokka/binaries/linux/tbl2asn;results/bin/prokka/binaries/linux"
+        prokka = "results/bin/prokka/binaries/linux"
     output:
         "results/{sample}/prokka/{sample}.gbk"
     log:
@@ -346,7 +346,7 @@ rule prokka:
         config["threads"]
     shell:
         """
-        export PATH={params.tbl2asn}:$PATH
+        export PATH={params.prokka}:$PATH
         prokka --force --cpus {threads} --outdir {params.outdir} --prefix {params.prefix} {input.chromosome} --centre X --compliant > {log.stdout} 2> {log.stderr}
         """
 
@@ -363,5 +363,5 @@ rule cleardir:
         rm -rf results/{sample}/extract-file/*.fastq
         rm -rf results/{sample}/adapterremoval/*_[0-9].fastq
         rm -rf results/{sample}/adapterremoval/*_[0-9]_edena.fastq
-        echo "Fastq files removed..." > {output}
+        echo "Fastq files removed..."
         """
