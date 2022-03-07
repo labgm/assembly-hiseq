@@ -4,3 +4,8 @@ channels:
 dependencies:
  - git
  - prokka
+ - tbl2asn
+ - parallel
+ - aragorn
+ - barrnap
+ - perl-xml-simple 

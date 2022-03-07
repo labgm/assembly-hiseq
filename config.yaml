@@ -1,6 +1,6 @@
 workdir: /home/rommel/assembly-hiseq
 
-threads: 12
+threads: 4
 mem_mb: 256000
 
 # Adapter Removal parameters
@@ -25,9 +25,18 @@ quast:
     genes: 'empty'
 
 samples:
-    '39931_S32':
-        forward: 'data/39931_S32_1.fastq.gz'
-        reverseR: 'data/39931_S32_2.fastq.gz'
+    '202098_S57':
+        forward: 'data/202098_S57_1.fastq.gz'
+        reverseR: 'data/202098_S57_2.fastq.gz'
+    '93_S60':
+        forward: 'data/93_S60_1.fastq.gz'
+        reverseR: 'data/93_S60_2.fastq.gz'
+    'H4_S59':
+        forward: 'data/H4_S59_1.fastq.gz'
+        reverseR: 'data/H4_S59_2.fastq.gz'
+    '410_S58':
+        forward: 'data/410_S58_1.fastq.gz'
+        reverseR: 'data/410_S58_2.fastq.gz'
 
 # Mininum length of contigs
 contigs:
