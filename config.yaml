@@ -1,4 +1,4 @@
-workdir: /home/fabio/Desktop/assembly-hiseq
+workdir: /home/rommel/assembly-hiseq
 
 threads: 4
 mem_mb: 256000
@@ -25,9 +25,18 @@ quast:
     genes: 'empty'
 
 samples:
-    'NG-19302_B208_lib327116_6377_1':
-        forward: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_1.fastq.gz'
-        reverse: 'data/NG-19302_B208_lib327116_6377/NG-19302_B208_lib327116_6377_1_2.fastq.gz'
+    '202098_S57':
+        forward: 'data/202098_S57_1.fastq.gz'
+        reverseR: 'data/202098_S57_2.fastq.gz'
+    '93_S60':
+        forward: 'data/93_S60_1.fastq.gz'
+        reverseR: 'data/93_S60_2.fastq.gz'
+    'H4_S59':
+        forward: 'data/H4_S59_1.fastq.gz'
+        reverseR: 'data/H4_S59_2.fastq.gz'
+    '410_S58':
+        forward: 'data/410_S58_1.fastq.gz'
+        reverseR: 'data/410_S58_2.fastq.gz'
 
 # Mininum length of contigs
 contigs:
